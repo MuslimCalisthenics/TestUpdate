@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html>
+<body>
+
+<h2>Using the XMLHttpRequest Object</h2>
+
+<div id="demo">
+<button type="button" onclick="loadXMLDoc()">Change Content</button>
+</div>
+<div id="demo">
+<button type="button" onclick="updateData()">Update Content</button>
+</div>
+
+<script>
+var curData = '[ \
+    { \
+        "ID": 1, \
+        "name": "John Doe", \
+        "address": "123 Main Street, Springfield, IL", \
+        "group": "Springfield Warriors" \
+    }, \
+    { \
+        "ID": 2, \
+        "name": "Jane Smith", \
+        "address": "456 Elm Street, Chicago, IL", \
+        "group": "Chicago Titans" \
+    }, \
+    { \
+        "ID": 3, \
+        "name": "Sam Wilson", \
+        "address": "789 Oak Avenue, New York, NY", \
+        "group": "NYC Hustlers" \
+    }, \
+    { \
+        "ID": 4, \
+        "name": "Alice Brown", \
+        "address": "321 Pine Lane, Los Angeles, CA", \
+        "group": "LA Challengers" \
+    }, \
+    { \
+        "ID": 5, \
+        "name": "Michael Johnson", \
+        "address": "654 Maple Road, Miami, FL", \
+        "group": "Miami Calisthenics" \
+    } \
+]';
+
+function updateGitHubFile({
+    token,
+    owner,
+    repo,
+    path,
+    branch,
+    content,
+    commitMessage
+}) {
+    const apiUrl = `https://api.github.com/repos/${owner}/${repo}/contents/${path}`;
+
+    // Get the current file's content and SHA
+    const xhrGet = new XMLHttpRequest();
+    xhrGet.open("GET", apiUrl, true);
+    xhrGet.setRequestHeader("Authorization", `token ${token}`);
+    xhrGet.onload = function () {
+        if (xhrGet.status === 200) {
+            const fileData = JSON.parse(xhrGet.responseText);
+            const sha = fileData.sha;
+
+            // Encode the new content in base64
+            const encodedContent = btoa(unescape(encodeURIComponent(content)));
+
+            // Update the file
+            const xhrPut = new XMLHttpRequest();
+            xhrPut.open("PUT", apiUrl, true);
+            xhrPut.setRequestHeader("Authorization", `token ${token}`);
+            xhrPut.setRequestHeader("Content-Type", "application/json");
+
+            const data = JSON.stringify({
+                message: commitMessage,
+                content: encodedContent,
+                sha: sha,
+                branch: branch
+            });
+
+            xhrPut.onload = function () {
+                if (xhrPut.status === 200 || xhrPut.status === 201) {
+                    console.log("File updated successfully!");
+                } else {
+                    console.error(`Error updating file: ${xhrPut.responseText}`);
+                }
+            };
+
+            xhrPut.onerror = function () {
+                console.error("Error during PUT request.");
+            };
+
+            xhrPut.send(data);
+        } else {
+            console.error(`Error fetching file SHA: ${xhrGet.responseText}`);
+        }
+    };
+
+    xhrGet.onerror = function () {
+        console.error("Error during GET request.");
+    };
+
+    xhrGet.send();
+}
+
+function loadXMLDoc() {
+	function fetchJSONFile(path, callback) {
+		var httpRequest = new XMLHttpRequest();
+		httpRequest.onreadystatechange = function() {
+			if (httpRequest.readyState === 4) {
+				if (httpRequest.status === 200) {
+					var data = JSON.parse(httpRequest.responseText);
+					if (callback) callback(data);
+				}
+			}
+		};
+		httpRequest.open('GET', path);
+		httpRequest.send();
+	}
+fetchJSONFile("https://raw.githubusercontent.com/MuslimCalisthenics/calisthenics-db/refs/heads/main/datacoba.json",console.log)
+}
+
+function updateData() {
+
+	// Usage example:
+	updateGitHubFile({
+		token: "f",
+		owner: "MuslimCalisthenics",
+		repo: "calisthenics-db",
+		path: "datacoba.json",
+		branch: "main", // or another branch
+		content: curData,//JSON.stringify({ ID: 1, name: "Updated Name" }, null, 2),
+		commitMessage: "Update file with new data"
+	});
+
+}
+
+
+
+</script>
+
+</body>
+</html>
